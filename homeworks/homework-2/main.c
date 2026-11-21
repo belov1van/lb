@@ -7,6 +7,12 @@ typedef struct {
     int score;
 } Result;
 
+/* Условие варианта 2: балл строго больше 80.
+   Используется и в individual(), и в save() — единый источник правды. */
+static int is_variant2(const Result *r) {
+    return r->score > 80;
+}
+
 int load(const char *path, Result a[], int *size) {
     FILE *f = fopen(path, "r");
     if (f == NULL) {
@@ -112,7 +118,7 @@ void individual(const Result a[], int n) {
 
     int found = 0;
     for (int i = 0; i < n; i++) {
-        if (a[i].score > 80) {
+        if (is_variant2(&a[i])) {
             printf("%d %d\n", a[i].id, a[i].score);
             found = 1;
         }
@@ -127,12 +133,17 @@ int save(const Result a[], int n, const char *path) {
     if (f == NULL) {
         return 0;
     }
+
     int ok = 1;
     for (int i = 0; i < n; i++) {
+        if (!is_variant2(&a[i])) {
+            continue;
+        }
         if (fprintf(f, "%d %d\n", a[i].id, a[i].score) < 0) {
             ok = 0;
         }
     }
+
     if (fclose(f) != 0) {
         ok = 0;
     }
@@ -181,7 +192,7 @@ int main(void) {
                 printf("Write error\n");
                 return 1;
             }
-            printf("Saved report.txt\n");
+            printf("Saved report.txt (variant 2 results)\n");
         } else {
             printf("Unknown command\n");
         }
